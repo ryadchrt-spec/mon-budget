@@ -1,0 +1,69 @@
+import type { Category, Transaction } from '../types'
+
+export interface CategoryBreakdown {
+  category: Category
+  spent: number
+  cap: number | null
+  ratio: number
+  percentOfIncome: number
+  status: 'ok' | 'warning' | 'danger'
+}
+
+export function sumByType(transactions: Transaction[], type: 'income' | 'expense'): number {
+  return transactions.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0)
+}
+
+export function topTransactions(transactions: Transaction[], type: 'income' | 'expense', limit = 5): Transaction[] {
+  return transactions
+    .filter((t) => t.type === type)
+    .slice()
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, limit)
+}
+
+export function categoryBreakdown(
+  transactions: Transaction[],
+  categories: Category[],
+  totalIncome: number,
+  defaultAlertThreshold: number,
+): CategoryBreakdown[] {
+  const expenseCategories = categories.filter((c) => c.type === 'expense' && !c.archived)
+
+  return expenseCategories
+    .map((category) => {
+      const spent = transactions
+        .filter((t) => t.type === 'expense' && t.categoryId === category.id)
+        .reduce((sum, t) => sum + t.amount, 0)
+
+      const threshold = category.alertThreshold ?? defaultAlertThreshold
+      let cap: number | null = null
+      if (category.monthlyLimit && category.monthlyLimit > 0) {
+        cap = category.monthlyLimit
+      } else if (totalIncome > 0) {
+        cap = totalIncome * (threshold / 100)
+      }
+
+      const ratio = cap && cap > 0 ? spent / cap : 0
+      const percentOfIncome = totalIncome > 0 ? (spent / totalIncome) * 100 : 0
+
+      let status: CategoryBreakdown['status'] = 'ok'
+      if (cap !== null) {
+        if (ratio >= 1) status = 'danger'
+        else if (ratio >= 0.8) status = 'warning'
+      }
+
+      return { category, spent, cap, ratio, percentOfIncome, status }
+    })
+    .filter((row) => row.spent > 0 || row.category.monthlyLimit)
+    .sort((a, b) => b.spent - a.spent)
+}
+
+export function biggestExpenseCategory(breakdown: CategoryBreakdown[]): CategoryBreakdown | null {
+  if (breakdown.length === 0) return null
+  return breakdown.reduce((max, row) => (row.spent > max.spent ? row : max), breakdown[0])
+}
+
+export const PIE_FALLBACK_COLORS = [
+  '#0369a1', '#16a34a', '#f97316', '#a855f7', '#e11d48',
+  '#6366f1', '#ec4899', '#eab308', '#059669', '#78716c',
+]
