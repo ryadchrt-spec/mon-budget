@@ -21,6 +21,7 @@ export interface Transaction {
   amount: number
   date: string
   createdAt: number
+  recurring?: boolean
 }
 
 export interface AppSettings {

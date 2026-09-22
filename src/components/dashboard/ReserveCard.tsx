@@ -13,7 +13,7 @@ export function ReserveCard({ reserve }: { reserve: number }) {
       </div>
       <span
         className={`font-heading mt-1 text-3xl font-bold tabular-nums ${
-          positive ? 'text-[var(--color-ink)]' : 'text-[var(--color-danger)]'
+          positive ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
         }`}
       >
         {positive ? '+ ' : '− '}

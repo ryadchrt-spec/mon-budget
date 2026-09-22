@@ -62,7 +62,14 @@ export default function App() {
     }
   }
 
-  async function handleSave(data: { type: Transaction['type']; categoryId: string; label: string; amount: number; date: string }) {
+  async function handleSave(data: {
+    type: Transaction['type']
+    categoryId: string
+    label: string
+    amount: number
+    date: string
+    recurring: boolean
+  }) {
     if (screen.name === 'entry' && screen.editing) {
       await updateTransaction(screen.editing.id, data)
     } else {

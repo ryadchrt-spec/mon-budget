@@ -1,3 +1,4 @@
+import { Repeat } from 'lucide-react'
 import type { Category, Transaction } from '../../types'
 import { IconBadge } from '../ui/IconBadge'
 import { formatEUR, dayLabel } from '../../utils/format'
@@ -22,7 +23,12 @@ export function TransactionRow({ transaction, category, onClick, rank }: Transac
       )}
       <IconBadge icon={category?.icon ?? 'MoreHorizontal'} color={category?.color ?? '#78716c'} size="sm" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[15px] font-medium text-[var(--color-ink)]">{transaction.label}</div>
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-[15px] font-medium text-[var(--color-ink)]">{transaction.label}</span>
+          {transaction.recurring && (
+            <Repeat size={12} className="shrink-0 text-[var(--color-primary)]" aria-label="Paiement récurrent" />
+          )}
+        </div>
         <div className="text-xs text-[var(--color-ink-soft)]">
           {category?.name ?? 'Autre'} · {dayLabel(transaction.date)}
         </div>

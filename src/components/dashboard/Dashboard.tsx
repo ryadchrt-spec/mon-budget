@@ -14,10 +14,11 @@ import {
   useAllCategories,
   useMonthTransactions,
   useYearTransactions,
+  useAllTransactions,
   useSettings,
   useCumulativeReserve,
 } from '../../hooks/useBudgetData'
-import { sumByType, topTransactions, categoryBreakdown, biggestExpenseCategory } from '../../utils/budget'
+import { sumByType, topTransactions, categoryBreakdown, biggestExpenseCategory, plannedExpenseTotal } from '../../utils/budget'
 import type { Transaction } from '../../types'
 
 interface DashboardProps {
@@ -36,6 +37,7 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
   const categories = useAllCategories()
   const monthTransactions = useMonthTransactions(year, month)
   const yearTransactions = useYearTransactions(year)
+  const allTransactions = useAllTransactions()
   const settings = useSettings()
   const reserve = useCumulativeReserve(year, month)
 
@@ -49,6 +51,10 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
   )
 
   const biggest = useMemo(() => biggestExpenseCategory(breakdown), [breakdown])
+  const plannedTotal = useMemo(
+    () => plannedExpenseTotal(year, month, categories ?? [], allTransactions ?? []),
+    [year, month, categories, allTransactions],
+  )
   const topExpenses = useMemo(() => topTransactions(monthTransactions ?? [], 'expense', 5), [monthTransactions])
   const topIncomes = useMemo(() => topTransactions(monthTransactions ?? [], 'income', 5), [monthTransactions])
 
@@ -74,7 +80,12 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
       />
 
       {view === 'year' ? (
-        <AnnualView year={year} transactions={yearTransactions ?? []} />
+        <AnnualView
+          year={year}
+          transactions={yearTransactions ?? []}
+          categories={categories ?? []}
+          allTransactions={allTransactions ?? []}
+        />
       ) : (
         <>
           <AlertBanner rows={breakdown} />
@@ -83,7 +94,7 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <CategoryPie rows={breakdown} />
             <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
-            <CategoryProgressList rows={breakdown} />
+            <CategoryProgressList rows={breakdown} plannedTotal={plannedTotal} />
           </div>
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">

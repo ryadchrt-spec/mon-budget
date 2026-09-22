@@ -40,6 +40,10 @@ export function useYearTransactions(year: number) {
   }, [year])
 }
 
+export function useAllTransactions() {
+  return useLiveQuery(() => db.transactions.toArray(), [])
+}
+
 export function useCumulativeReserve(year: number, month: number) {
   return useLiveQuery(async () => {
     const end = new Date(year, month + 1, 1).getTime()

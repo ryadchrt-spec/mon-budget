@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Check, Trash2 } from 'lucide-react'
+import { ArrowLeft, Check, Trash2, Repeat } from 'lucide-react'
 import { Keypad } from './Keypad'
 import { CategoryGrid } from './CategoryGrid'
 import { Modal } from '../ui/Modal'
 import { CategoryForm, type CategoryFormValue } from '../settings/CategoryForm'
 import { useCategories } from '../../hooks/useBudgetData'
 import { addCategory } from '../../hooks/useBudgetData'
+import { toDateInputValue, fromDateInputValue } from '../../utils/format'
 import type { Transaction, TransactionType } from '../../types'
 
 interface EntryScreenProps {
   editing?: Transaction | null
   defaultDate: string
-  onSave: (data: { type: TransactionType; categoryId: string; label: string; amount: number; date: string }) => void
+  onSave: (data: {
+    type: TransactionType
+    categoryId: string
+    label: string
+    amount: number
+    date: string
+    recurring: boolean
+  }) => void
   onDelete?: () => void
   onCancel: () => void
 }
@@ -27,6 +35,8 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
   const [raw, setRaw] = useState(editing ? String(editing.amount).replace('.', ',') : '')
   const [categoryId, setCategoryId] = useState<string | null>(editing?.categoryId ?? null)
   const [label, setLabel] = useState(editing?.label ?? '')
+  const [date, setDate] = useState(toDateInputValue(editing?.date ?? defaultDate))
+  const [recurring, setRecurring] = useState(editing?.recurring ?? false)
   const [pressedKey, setPressedKey] = useState<string | null>(null)
   const [showNewCategory, setShowNewCategory] = useState(false)
 
@@ -122,7 +132,8 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
       categoryId,
       label: label.trim() || categories?.find((c) => c.id === categoryId)?.name || '',
       amount,
-      date: editing?.date ?? defaultDate,
+      date: fromDateInputValue(date),
+      recurring,
     })
   }
 
@@ -183,8 +194,33 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
         value={label}
         onChange={(e) => setLabel(e.target.value)}
         placeholder="Nom (ex : Courses Carrefour)"
-        className="mb-5 h-14 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-center text-[17px] text-[var(--color-ink)] outline-none placeholder:text-[var(--color-ink-soft)] focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+        className="mb-3 h-14 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-center text-[17px] text-[var(--color-ink)] outline-none placeholder:text-[var(--color-ink-soft)] focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
       />
+
+      <div className="mb-5 flex flex-col gap-2.5 sm:flex-row">
+        <label className="flex h-14 flex-1 items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4">
+          <span className="text-sm font-medium text-[var(--color-ink-soft)]">Date</span>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="flex-1 bg-transparent text-[17px] text-[var(--color-ink)] outline-none"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => setRecurring((r) => !r)}
+          aria-pressed={recurring}
+          className={`flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl border-2 text-[15px] font-semibold transition-colors active:scale-[0.98] ${
+            recurring
+              ? 'border-[var(--color-primary)] bg-[var(--color-surface-muted)] text-[var(--color-primary)]'
+              : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-ink-soft)]'
+          }`}
+        >
+          <Repeat size={19} aria-hidden="true" />
+          {recurring ? 'Se répète chaque mois' : 'Paiement unique'}
+        </button>
+      </div>
 
       <div className="mb-5">
         <CategoryGrid

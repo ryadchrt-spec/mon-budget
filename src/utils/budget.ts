@@ -63,6 +63,34 @@ export function biggestExpenseCategory(breakdown: CategoryBreakdown[]): Category
   return breakdown.reduce((max, row) => (row.spent > max.spent ? row : max), breakdown[0])
 }
 
+/**
+ * Dépenses prévues pour un mois donné : pour chaque catégorie de dépense,
+ * son plafond s'il en a un, sinon la somme de ses paiements récurrents
+ * déjà en place à cette date. Sert de référence fixe (le "budget prévu"),
+ * indépendante des dépenses réellement enregistrées ce mois-ci.
+ */
+export function plannedExpenseTotal(
+  year: number,
+  month: number,
+  categories: Category[],
+  allTransactions: Transaction[],
+): number {
+  const cutoff = new Date(year, month + 1, 1).getTime()
+  const expenseCategories = categories.filter((c) => c.type === 'expense' && !c.archived)
+
+  return expenseCategories.reduce((sum, category) => {
+    if (category.monthlyLimit && category.monthlyLimit > 0) {
+      return sum + category.monthlyLimit
+    }
+    const recurringSum = allTransactions
+      .filter(
+        (t) => t.recurring && t.type === 'expense' && t.categoryId === category.id && new Date(t.date).getTime() < cutoff,
+      )
+      .reduce((s, t) => s + t.amount, 0)
+    return sum + recurringSum
+  }, 0)
+}
+
 export const PIE_FALLBACK_COLORS = [
   '#0369a1', '#16a34a', '#f97316', '#a855f7', '#e11d48',
   '#6366f1', '#ec4899', '#eab308', '#059669', '#78716c',

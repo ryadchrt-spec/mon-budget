@@ -41,7 +41,7 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
                 </Pie>
                 <Tooltip
                   formatter={(value, _name, entry) => [
-                    `${formatEUR(Number(value))} (${Math.round(((entry.payload as CategoryBreakdown).spent / total) * 100)}%)`,
+                    `− ${formatEUR(Number(value))} (${Math.round(((entry.payload as CategoryBreakdown).spent / total) * 100)}%)`,
                     (entry.payload as CategoryBreakdown).category.name,
                   ]}
                   contentStyle={{
@@ -66,8 +66,8 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
                   <span className="text-sm font-semibold tabular-nums text-[var(--color-ink-soft)]">
                     {Math.round((row.spent / total) * 100)}%
                   </span>
-                  <span className="w-20 shrink-0 text-right text-[15px] font-semibold tabular-nums text-[var(--color-ink)]">
-                    {formatEUR(row.spent)}
+                  <span className="w-24 shrink-0 text-right text-[15px] font-semibold tabular-nums text-[var(--color-danger)]">
+                    − {formatEUR(row.spent)}
                   </span>
                 </li>
               ))}

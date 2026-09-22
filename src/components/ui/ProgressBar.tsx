@@ -33,7 +33,7 @@ export function CategoryProgressBar({ row }: { row: CategoryBreakdown }) {
         <span className={`flex items-center gap-1 text-sm font-semibold ${textStyle}`}>
           {row.status === 'danger' && <AlertTriangle size={15} aria-hidden="true" />}
           {row.status === 'ok' && row.cap && <CheckCircle2 size={14} className="text-[var(--color-income)]" aria-hidden="true" />}
-          {formatEUR(row.spent)}
+          − {formatEUR(row.spent)}
           {row.cap ? <span className="font-normal text-[var(--color-ink-soft)]"> / {formatEUR(row.cap)}</span> : null}
         </span>
       </div>

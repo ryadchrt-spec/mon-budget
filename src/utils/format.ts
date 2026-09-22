@@ -39,3 +39,13 @@ export function isoDateNow(): string {
 export function ymKey(year: number, month: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}`
 }
+
+export function toDateInputValue(isoDate: string): string {
+  const d = new Date(isoDate)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export function fromDateInputValue(value: string): string {
+  const [y, m, d] = value.split('-').map(Number)
+  return new Date(y, m - 1, d, 12).toISOString()
+}
