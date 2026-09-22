@@ -5,6 +5,7 @@ import { AlertBanner } from './AlertBanner'
 import { MonthSummary } from './MonthSummary'
 import { CategoryPie } from './CategoryPie'
 import { CategoryProgressList } from './CategoryProgressList'
+import { MonthBarColumns } from './MonthBarColumns'
 import { TopList } from './TopList'
 import { TopCategoryList } from './TopCategoryList'
 import { TransactionList } from './TransactionList'
@@ -79,8 +80,9 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
           <AlertBanner rows={breakdown} />
           <MonthSummary totalIncome={totalIncome} totalExpense={totalExpense} reserve={reserve ?? 0} biggest={biggest} />
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <CategoryPie rows={breakdown} />
+            <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
             <CategoryProgressList rows={breakdown} />
           </div>
 

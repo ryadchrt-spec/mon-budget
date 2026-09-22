@@ -29,7 +29,7 @@ export function TransactionRow({ transaction, category, onClick, rank }: Transac
       </div>
       <span
         className={`shrink-0 text-[15px] font-bold tabular-nums ${
-          isIncome ? 'text-[var(--color-income)]' : 'text-[var(--color-ink)]'
+          isIncome ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
         }`}
       >
         {isIncome ? '+ ' : '− '}

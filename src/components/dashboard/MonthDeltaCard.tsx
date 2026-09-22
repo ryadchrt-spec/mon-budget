@@ -1,26 +1,26 @@
-import { PiggyBank } from 'lucide-react'
+import { Wallet } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { formatEUR } from '../../utils/format'
 
-export function ReserveCard({ reserve }: { reserve: number }) {
-  const positive = reserve >= 0
+export function MonthDeltaCard({ delta }: { delta: number }) {
+  const positive = delta >= 0
 
   return (
     <Card className="flex flex-col justify-between p-5">
       <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-ink-soft)]">
-        <PiggyBank size={16} className="text-[var(--color-primary)]" aria-hidden="true" />
-        Argent de côté total
+        <Wallet size={16} className="text-[var(--color-primary)]" aria-hidden="true" />
+        Argent mis de côté ce mois-ci
       </div>
       <span
         className={`font-heading mt-1 text-3xl font-bold tabular-nums ${
-          positive ? 'text-[var(--color-ink)]' : 'text-[var(--color-danger)]'
+          positive ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
         }`}
       >
         {positive ? '+ ' : '− '}
-        {formatEUR(Math.abs(reserve))}
+        {formatEUR(Math.abs(delta))}
       </span>
       <span className="mt-1 text-sm text-[var(--color-ink-soft)]">
-        {positive ? 'Ce qui te reste au total.' : 'Tu as tapé dans ta réserve.'}
+        {positive ? 'Tu as mis de l’argent de côté.' : 'Tu as dépensé plus que tes revenus.'}
       </span>
     </Card>
   )

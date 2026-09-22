@@ -164,14 +164,14 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
       <div className="my-4 flex flex-col items-center justify-center py-3 text-center">
         <span
           className={`text-sm font-semibold uppercase tracking-wide ${
-            sign === 'income' ? 'text-[var(--color-income)]' : 'text-[var(--color-ink-soft)]'
+            sign === 'income' ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
           }`}
         >
           {sign === 'income' ? 'Revenu' : 'Dépense'}
         </span>
         <span
           className={`font-heading text-6xl font-extrabold tabular-nums transition-colors sm:text-7xl ${
-            sign === 'income' ? 'text-[var(--color-income)]' : 'text-[var(--color-ink)]'
+            sign === 'income' ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
           }`}
         >
           {displayValue} <span className="text-3xl font-bold sm:text-4xl">€</span>

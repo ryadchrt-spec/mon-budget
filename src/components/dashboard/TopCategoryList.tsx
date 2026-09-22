@@ -22,8 +22,8 @@ export function TopCategoryList({ rows, limit = 5 }: { rows: CategoryBreakdown[]
               <span className="w-5 shrink-0 text-center text-sm font-bold text-[var(--color-ink-soft)]">{i + 1}</span>
               <IconBadge icon={row.category.icon} color={row.category.color} size="sm" />
               <span className="flex-1 truncate text-[15px] font-medium text-[var(--color-ink)]">{row.category.name}</span>
-              <span className="shrink-0 text-[15px] font-bold tabular-nums text-[var(--color-ink)]">
-                {formatEUR(row.spent)}
+              <span className="shrink-0 text-[15px] font-bold tabular-nums text-[var(--color-danger)]">
+                − {formatEUR(row.spent)}
               </span>
             </div>
           ))}

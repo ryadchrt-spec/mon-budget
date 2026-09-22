@@ -1,7 +1,7 @@
 import { Flame } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { IconBadge } from '../ui/IconBadge'
-import { MonthBarColumns } from './MonthBarColumns'
+import { MonthDeltaCard } from './MonthDeltaCard'
 import { ReserveCard } from './ReserveCard'
 import { formatEUR } from '../../utils/format'
 import type { CategoryBreakdown } from '../../utils/budget'
@@ -34,9 +34,9 @@ export function MonthSummary({ totalIncome, totalExpense, reserve, biggest }: Mo
         </span>
       </Card>
 
-      <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
+      <MonthDeltaCard delta={balance} />
 
-      <ReserveCard reserve={reserve} monthDelta={balance} />
+      <ReserveCard reserve={reserve} />
 
       {biggest && (
         <Card className="col-span-1 flex items-center gap-4 p-5 sm:col-span-3">
@@ -50,8 +50,8 @@ export function MonthSummary({ totalIncome, totalExpense, reserve, biggest }: Mo
               {biggest.category.name}
             </div>
           </div>
-          <span className="font-heading shrink-0 text-2xl font-bold tabular-nums text-[var(--color-ink)]">
-            {formatEUR(biggest.spent)}
+          <span className="font-heading shrink-0 text-2xl font-bold tabular-nums text-[var(--color-danger)]">
+            − {formatEUR(biggest.spent)}
           </span>
         </Card>
       )}

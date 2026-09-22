@@ -14,26 +14,30 @@ export function MonthBarColumns({ totalIncome, totalExpense }: MonthBarColumnsPr
   return (
     <Card className="flex flex-col p-5">
       <span className="mb-3 text-sm font-medium text-[var(--color-ink-soft)]">Revenus vs Dépenses</span>
-      <div className="flex flex-1 items-end justify-center gap-10">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-sm font-bold tabular-nums text-[var(--color-income)]">{formatEUR(totalIncome, true)}</span>
-          <div className="flex h-24 w-12 items-end overflow-hidden rounded-lg bg-[var(--color-surface-muted)]">
+      <div className="flex min-h-80 flex-1 items-end justify-center gap-14 py-2">
+        <div className="flex h-full flex-col items-center gap-2.5">
+          <span className="text-base font-bold tabular-nums text-[var(--color-income)]">
+            + {formatEUR(totalIncome, true)}
+          </span>
+          <div className="flex w-20 flex-1 items-end overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">
             <div
-              className="w-full rounded-lg bg-[var(--color-income)] transition-[height] duration-500 ease-out"
+              className="w-full rounded-xl bg-[var(--color-income)] transition-[height] duration-500 ease-out"
               style={{ height: `${incomeHeight}%` }}
             />
           </div>
-          <span className="text-xs font-medium text-[var(--color-ink-soft)]">Revenus</span>
+          <span className="text-sm font-medium text-[var(--color-ink-soft)]">Revenus</span>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-sm font-bold tabular-nums text-[var(--color-ink)]">{formatEUR(totalExpense, true)}</span>
-          <div className="flex h-24 w-12 items-end overflow-hidden rounded-lg bg-[var(--color-surface-muted)]">
+        <div className="flex h-full flex-col items-center gap-2.5">
+          <span className="text-base font-bold tabular-nums text-[var(--color-danger)]">
+            − {formatEUR(totalExpense, true)}
+          </span>
+          <div className="flex w-20 flex-1 items-end overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">
             <div
-              className="w-full rounded-lg bg-[var(--color-primary)] transition-[height] duration-500 ease-out"
+              className="w-full rounded-xl bg-[var(--color-danger)] transition-[height] duration-500 ease-out"
               style={{ height: `${expenseHeight}%` }}
             />
           </div>
-          <span className="text-xs font-medium text-[var(--color-ink-soft)]">Dépenses</span>
+          <span className="text-sm font-medium text-[var(--color-ink-soft)]">Dépenses</span>
         </div>
       </div>
     </Card>

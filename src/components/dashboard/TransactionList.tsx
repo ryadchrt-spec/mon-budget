@@ -31,9 +31,10 @@ export function TransactionList({ type, transactions, categories, total, onEdit 
         </div>
         <span
           className={`font-heading text-lg font-bold tabular-nums ${
-            isIncome ? 'text-[var(--color-income)]' : 'text-[var(--color-ink)]'
+            isIncome ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
           }`}
         >
+          {isIncome ? '+ ' : '− '}
           {formatEUR(total)}
         </span>
       </div>
