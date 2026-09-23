@@ -25,7 +25,7 @@ export function TransactionList({ type, transactions, categories, total, onEdit 
           {isIncome ? (
             <ArrowUpCircle size={18} className="text-[var(--color-income)]" aria-hidden="true" />
           ) : (
-            <ArrowDownCircle size={18} className="text-[var(--color-ink-soft)]" aria-hidden="true" />
+            <ArrowDownCircle size={18} className="text-[var(--color-danger)]" aria-hidden="true" />
           )}
           <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">
             {isIncome ? 'Revenus' : 'Dépenses'}
