@@ -11,15 +11,23 @@ interface TransactionListProps {
   categories: Category[]
   total: number
   onEdit: (transaction: Transaction) => void
+  maxHeightClass?: string
 }
 
-export function TransactionList({ type, transactions, categories, total, onEdit }: TransactionListProps) {
+export function TransactionList({
+  type,
+  transactions,
+  categories,
+  total,
+  onEdit,
+  maxHeightClass = 'max-h-[26rem]',
+}: TransactionListProps) {
   const byId = new Map(categories.map((c) => [c.id, c]))
   const isIncome = type === 'income'
   const signedEUR = (n: number) => `${isIncome ? '+ ' : '− '}${formatEUR(n)}`
 
   return (
-    <Card data-anim-card className="flex max-h-[26rem] flex-col p-5">
+    <Card data-anim-card className={`flex flex-col p-5 ${maxHeightClass}`}>
       <div className="mb-1 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {isIncome ? (

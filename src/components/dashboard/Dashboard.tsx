@@ -94,49 +94,48 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
           <AlertBanner rows={breakdown} />
           <MonthSummary totalIncome={totalIncome} totalExpense={totalExpense} reserve={reserve ?? 0} biggest={biggest} />
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:items-start">
             <CategoryPie rows={breakdown} />
 
             <div className="flex flex-col gap-5">
               <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
-              <div className="flex flex-1 flex-col gap-5">
-                <TopCategoryList rows={breakdown} className="flex-1" />
-                <TopList
-                  title="Top des dépenses (uniques)"
-                  transactions={topExpenses}
-                  categories={categories ?? []}
-                  onEdit={onEditTransaction}
-                  emptyLabel="Aucune dépense ce mois-ci."
-                  className="flex-1"
-                />
-                <TopList
-                  title="Top des revenus"
-                  transactions={topIncomes}
-                  categories={categories ?? []}
-                  onEdit={onEditTransaction}
-                  emptyLabel="Aucun revenu ce mois-ci."
-                  className="flex-1"
-                />
-              </div>
+              <CategoryProgressList rows={breakdown} plannedTotal={plannedTotal} />
             </div>
 
-            <CategoryProgressList rows={breakdown} plannedTotal={plannedTotal} />
+            <div className="flex flex-col gap-5">
+              <TransactionList
+                type="income"
+                transactions={incomeList}
+                categories={categories ?? []}
+                total={totalIncome}
+                onEdit={onEditTransaction}
+                maxHeightClass="max-h-72"
+              />
+              <TransactionList
+                type="expense"
+                transactions={expenseList}
+                categories={categories ?? []}
+                total={totalExpense}
+                onEdit={onEditTransaction}
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <TransactionList
-              type="income"
-              transactions={incomeList}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <TopCategoryList rows={breakdown} />
+            <TopList
+              title="Top des dépenses (uniques)"
+              transactions={topExpenses}
               categories={categories ?? []}
-              total={totalIncome}
               onEdit={onEditTransaction}
+              emptyLabel="Aucune dépense ce mois-ci."
             />
-            <TransactionList
-              type="expense"
-              transactions={expenseList}
+            <TopList
+              title="Top des revenus"
+              transactions={topIncomes}
               categories={categories ?? []}
-              total={totalExpense}
               onEdit={onEditTransaction}
+              emptyLabel="Aucun revenu ce mois-ci."
             />
           </div>
         </div>

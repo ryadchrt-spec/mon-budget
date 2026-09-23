@@ -27,7 +27,7 @@ export function CategoryProgressList({ rows, plannedTotal }: CategoryProgressLis
           Aucune dépense enregistrée ce mois-ci.
         </p>
       ) : (
-        <div className="divide-y divide-[var(--color-border)]">
+        <div className="max-h-[31rem] divide-y divide-[var(--color-border)] overflow-y-auto pr-1">
           {rows.map((row) => (
             <CategoryProgressBar key={row.category.id} row={row} />
           ))}
