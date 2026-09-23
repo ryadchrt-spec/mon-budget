@@ -11,14 +11,15 @@ interface CategoryProgressListProps {
 
 export function CategoryProgressList({ rows, plannedTotal }: CategoryProgressListProps) {
   return (
-    <Card className="p-5">
+    <Card data-anim-card className="p-5">
       <div className="mb-1 flex items-center gap-2">
         <Gauge size={18} className="text-[var(--color-primary)]" aria-hidden="true" />
         <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">Suivi par catégorie</h3>
       </div>
       {plannedTotal > 0 && (
-        <p className="mb-2 text-sm text-[var(--color-ink-soft)]">
-          Dépenses prévues ce mois (plafonds + récurrents) : <span className="font-semibold text-[var(--color-ink)]">{formatEUR(plannedTotal)}</span>
+        <p className="mb-2 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--color-ink-soft)] sm:text-sm">
+          Prévu (plafonds + récurrents){' '}
+          <span className="font-semibold text-[var(--color-danger)]">− {formatEUR(plannedTotal)}</span>
         </p>
       )}
       {rows.length === 0 ? (

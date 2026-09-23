@@ -1,6 +1,7 @@
 import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { TransactionRow } from './TransactionRow'
+import { AnimatedNumber } from '../ui/AnimatedNumber'
 import { formatEUR } from '../../utils/format'
 import type { Category, Transaction, TransactionType } from '../../types'
 
@@ -15,9 +16,10 @@ interface TransactionListProps {
 export function TransactionList({ type, transactions, categories, total, onEdit }: TransactionListProps) {
   const byId = new Map(categories.map((c) => [c.id, c]))
   const isIncome = type === 'income'
+  const signedEUR = (n: number) => `${isIncome ? '+ ' : '− '}${formatEUR(n)}`
 
   return (
-    <Card className="flex max-h-[26rem] flex-col p-5">
+    <Card data-anim-card className="flex max-h-[26rem] flex-col p-5">
       <div className="mb-1 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {isIncome ? (
@@ -29,14 +31,13 @@ export function TransactionList({ type, transactions, categories, total, onEdit 
             {isIncome ? 'Revenus' : 'Dépenses'}
           </h3>
         </div>
-        <span
+        <AnimatedNumber
+          value={total}
+          formatter={signedEUR}
           className={`font-heading text-lg font-bold tabular-nums ${
             isIncome ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
           }`}
-        >
-          {isIncome ? '+ ' : '− '}
-          {formatEUR(total)}
-        </span>
+        />
       </div>
       {transactions.length === 0 ? (
         <p className="flex flex-1 items-center justify-center py-6 text-center text-[15px] text-[var(--color-ink-soft)]">

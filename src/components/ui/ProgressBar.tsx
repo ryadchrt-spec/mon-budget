@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { AnimatedNumber } from './AnimatedNumber'
 import type { CategoryBreakdown } from '../../utils/budget'
 import { formatEUR } from '../../utils/format'
 
@@ -15,6 +16,9 @@ function gradientColor(ratio: number): string {
   return (GRADIENT_STOPS.find((stop) => ratio < stop.upTo) ?? GRADIENT_STOPS[GRADIENT_STOPS.length - 1]).color
 }
 
+const remainingFormat = (n: number) => (n >= 0 ? formatEUR(n) : `− ${formatEUR(Math.abs(n))}`)
+const minusEUR = (n: number) => `− ${formatEUR(n)}`
+
 export function CategoryProgressBar({ row }: { row: CategoryBreakdown }) {
   const pct = row.cap ? Math.min(100, Math.round(row.ratio * 100)) : 0
   const barColor = gradientColor(row.ratio)
@@ -29,15 +33,16 @@ export function CategoryProgressBar({ row }: { row: CategoryBreakdown }) {
           {row.status === 'ok' && row.cap && <CheckCircle2 size={14} className="text-[var(--color-income)]" aria-hidden="true" />}
           {remaining !== null && row.cap !== null ? (
             <>
-              <span className={remaining >= 0 ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'}>
-                {remaining >= 0 ? '' : '− '}
-                {formatEUR(Math.abs(remaining))}
-              </span>
+              <AnimatedNumber
+                value={remaining}
+                formatter={remainingFormat}
+                className={remaining >= 0 ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'}
+              />
               <span className="font-normal text-[var(--color-ink-soft)]"> / </span>
               <span className="text-[var(--color-danger)]">− {formatEUR(row.cap)}</span>
             </>
           ) : (
-            <span className="text-[var(--color-danger)]">− {formatEUR(row.spent)}</span>
+            <AnimatedNumber value={row.spent} formatter={minusEUR} className="text-[var(--color-danger)]" />
           )}
         </span>
       </div>

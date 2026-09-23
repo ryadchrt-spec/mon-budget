@@ -7,6 +7,7 @@ export function AlertBanner({ rows }: { rows: CategoryBreakdown[] }) {
 
   return (
     <div
+      data-anim-card
       role="alert"
       className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-red-200 bg-[var(--color-danger-soft)] p-4"
     >

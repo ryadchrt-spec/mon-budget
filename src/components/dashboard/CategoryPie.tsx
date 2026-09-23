@@ -1,16 +1,38 @@
+import { useEffect, useRef } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { PieChart as PieIcon } from 'lucide-react'
+import gsap from 'gsap'
 import { Card } from '../ui/Card'
 import { IconBadge } from '../ui/IconBadge'
+import { AnimatedNumber } from '../ui/AnimatedNumber'
 import { formatEUR } from '../../utils/format'
+import { useReducedMotion } from '../../hooks/useReducedMotion'
 import type { CategoryBreakdown } from '../../utils/budget'
+
+const minusEUR = (n: number) => `− ${formatEUR(n)}`
 
 export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
   const data = rows.filter((r) => r.spent > 0)
   const total = data.reduce((sum, r) => sum + r.spent, 0)
+  const listRef = useRef<HTMLUListElement>(null)
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    if (reducedMotion || !listRef.current) return
+    const targets = listRef.current.querySelectorAll('li')
+    if (targets.length === 0) return
+    const tween = gsap.fromTo(
+      targets,
+      { opacity: 0, x: -8 },
+      { opacity: 1, x: 0, duration: 0.3, stagger: 0.04, ease: 'power1.out', clearProps: 'opacity,transform', overwrite: true },
+    )
+    return () => {
+      tween.kill()
+    }
+  }, [rows, reducedMotion])
 
   return (
-    <Card className="p-5">
+    <Card data-anim-card className="p-5">
       <div className="mb-3 flex items-center gap-2">
         <PieIcon size={18} className="text-[var(--color-primary)]" aria-hidden="true" />
         <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">Où part ton argent</h3>
@@ -34,6 +56,9 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
                   paddingAngle={2}
                   stroke="var(--color-surface)"
                   strokeWidth={2}
+                  isAnimationActive={!reducedMotion}
+                  animationDuration={700}
+                  animationEasing="ease-out"
                 >
                   {data.map((row) => (
                     <Cell key={row.category.id} fill={row.category.color} />
@@ -53,7 +78,7 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <ul className="mt-2 flex flex-col gap-2.5">
+          <ul ref={listRef} className="mt-2 flex flex-col gap-2.5">
             {data
               .slice()
               .sort((a, b) => b.spent - a.spent)
@@ -66,9 +91,11 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
                   <span className="text-sm font-semibold tabular-nums text-[var(--color-ink-soft)]">
                     {Math.round((row.spent / total) * 100)}%
                   </span>
-                  <span className="w-24 shrink-0 text-right text-[15px] font-semibold tabular-nums text-[var(--color-danger)]">
-                    − {formatEUR(row.spent)}
-                  </span>
+                  <AnimatedNumber
+                    value={row.spent}
+                    formatter={minusEUR}
+                    className="w-24 shrink-0 text-right text-[15px] font-semibold tabular-nums text-[var(--color-danger)]"
+                  />
                 </li>
               ))}
           </ul>

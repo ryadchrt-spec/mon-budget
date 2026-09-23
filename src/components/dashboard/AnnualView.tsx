@@ -2,8 +2,11 @@ import { useMemo } from 'react'
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts'
 import { BarChart3 } from 'lucide-react'
 import { Card } from '../ui/Card'
+import { AnimatedNumber } from '../ui/AnimatedNumber'
 import { formatEUR } from '../../utils/format'
 import { plannedExpenseTotal } from '../../utils/budget'
+import { useStaggerReveal } from '../../hooks/useStaggerReveal'
+import { useReducedMotion } from '../../hooks/useReducedMotion'
 import type { Category, Transaction } from '../../types'
 
 const MONTH_SHORT = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
@@ -18,7 +21,14 @@ interface AnnualViewProps {
   allTransactions: Transaction[]
 }
 
+const signedEUR = (n: number) => `${n >= 0 ? '+ ' : '− '}${formatEUR(Math.abs(n))}`
+const plusEUR = (n: number) => `+ ${formatEUR(n)}`
+const minusEUR = (n: number) => `− ${formatEUR(n)}`
+
 export function AnnualView({ year, transactions, categories, allTransactions }: AnnualViewProps) {
+  const reducedMotion = useReducedMotion()
+  const revealRef = useStaggerReveal([year])
+
   const data = useMemo(() => {
     const now = new Date()
     const rows = MONTH_SHORT.map((label, month) => ({
@@ -49,34 +59,37 @@ export function AnnualView({ year, transactions, categories, allTransactions }: 
   const hasProjection = data.some((r) => r.isProjected)
 
   return (
-    <div className="flex flex-col gap-4">
+    <div ref={revealRef} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="p-5">
+        <Card data-anim-card className="p-5">
           <span className="text-sm font-medium text-[var(--color-ink-soft)]">Solde de l'année {year}</span>
-          <div
-            className={`font-heading mt-1 text-3xl font-bold tabular-nums ${
+          <AnimatedNumber
+            value={balance}
+            formatter={signedEUR}
+            className={`font-heading mt-1 block text-3xl font-bold tabular-nums ${
               balance >= 0 ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
             }`}
-          >
-            {balance >= 0 ? '+ ' : '− '}
-            {formatEUR(Math.abs(balance))}
-          </div>
+          />
         </Card>
-        <Card className="p-5">
+        <Card data-anim-card className="p-5">
           <span className="text-sm font-medium text-[var(--color-ink-soft)]">Total revenus</span>
-          <div className="font-heading mt-1 text-3xl font-bold tabular-nums text-[var(--color-income)]">
-            + {formatEUR(totalIncome)}
-          </div>
+          <AnimatedNumber
+            value={totalIncome}
+            formatter={plusEUR}
+            className="font-heading mt-1 block text-3xl font-bold tabular-nums text-[var(--color-income)]"
+          />
         </Card>
-        <Card className="p-5">
+        <Card data-anim-card className="p-5">
           <span className="text-sm font-medium text-[var(--color-ink-soft)]">Total dépenses</span>
-          <div className="font-heading mt-1 text-3xl font-bold tabular-nums text-[var(--color-danger)]">
-            − {formatEUR(totalExpense)}
-          </div>
+          <AnimatedNumber
+            value={totalExpense}
+            formatter={minusEUR}
+            className="font-heading mt-1 block text-3xl font-bold tabular-nums text-[var(--color-danger)]"
+          />
         </Card>
       </div>
 
-      <Card className="p-5">
+      <Card data-anim-card className="p-5">
         <div className="mb-3 flex items-center gap-2">
           <BarChart3 size={18} className="text-[var(--color-primary)]" aria-hidden="true" />
           <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">Mois par mois</h3>
@@ -109,8 +122,22 @@ export function AnnualView({ year, transactions, categories, allTransactions }: 
                 contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)', fontFamily: 'var(--font-body)' }}
               />
               <Legend wrapperStyle={{ fontFamily: 'var(--font-body)', fontSize: 13 }} />
-              <Bar dataKey="Revenus" fill={INCOME_COLOR} radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Dépenses" fill={EXPENSE_COLOR} radius={[6, 6, 0, 0]}>
+              <Bar
+                dataKey="Revenus"
+                fill={INCOME_COLOR}
+                radius={[6, 6, 0, 0]}
+                isAnimationActive={!reducedMotion}
+                animationDuration={600}
+                animationEasing="ease-out"
+              />
+              <Bar
+                dataKey="Dépenses"
+                fill={EXPENSE_COLOR}
+                radius={[6, 6, 0, 0]}
+                isAnimationActive={!reducedMotion}
+                animationDuration={600}
+                animationEasing="ease-out"
+              >
                 {data.map((row) => (
                   <Cell key={row.month} fill={row.isProjected ? EXPENSE_PROJECTED_COLOR : EXPENSE_COLOR} />
                 ))}

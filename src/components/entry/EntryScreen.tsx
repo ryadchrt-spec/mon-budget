@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Check, Trash2, Repeat } from 'lucide-react'
+import gsap from 'gsap'
 import { Keypad } from './Keypad'
 import { CategoryGrid } from './CategoryGrid'
 import { Modal } from '../ui/Modal'
@@ -7,6 +8,7 @@ import { CategoryForm, type CategoryFormValue } from '../settings/CategoryForm'
 import { useCategories } from '../../hooks/useBudgetData'
 import { addCategory } from '../../hooks/useBudgetData'
 import { toDateInputValue, fromDateInputValue } from '../../utils/format'
+import { useReducedMotion } from '../../hooks/useReducedMotion'
 import type { Transaction, TransactionType } from '../../types'
 
 interface EntryScreenProps {
@@ -39,6 +41,8 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
   const [recurring, setRecurring] = useState(editing?.recurring ?? false)
   const [pressedKey, setPressedKey] = useState<string | null>(null)
   const [showNewCategory, setShowNewCategory] = useState(false)
+  const amountRef = useRef<HTMLSpanElement>(null)
+  const reducedMotion = useReducedMotion()
 
   const categories = useCategories(sign)
 
@@ -86,6 +90,11 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
     flashKey(next === 'income' ? '+' : '-')
     setSign(next)
   }
+
+  useEffect(() => {
+    if (reducedMotion || !amountRef.current) return
+    gsap.fromTo(amountRef.current, { scale: 1.12 }, { scale: 1, duration: 0.25, ease: 'back.out(2)' })
+  }, [raw, reducedMotion])
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -181,7 +190,8 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
           {sign === 'income' ? 'Revenu' : 'Dépense'}
         </span>
         <span
-          className={`font-heading text-6xl font-extrabold tabular-nums transition-colors sm:text-7xl ${
+          ref={amountRef}
+          className={`font-heading inline-block text-6xl font-extrabold tabular-nums transition-colors sm:text-7xl ${
             sign === 'income' ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'
           }`}
         >

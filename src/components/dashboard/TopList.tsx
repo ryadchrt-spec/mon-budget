@@ -14,7 +14,7 @@ interface TopListProps {
 export function TopList({ title, transactions, categories, onEdit, emptyLabel }: TopListProps) {
   const byId = new Map(categories.map((c) => [c.id, c]))
   return (
-    <Card className="p-5">
+    <Card data-anim-card className="p-5">
       <div className="mb-1 flex items-center gap-2">
         <Trophy size={18} className="text-[var(--color-warning)]" aria-hidden="true" />
         <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">{title}</h3>

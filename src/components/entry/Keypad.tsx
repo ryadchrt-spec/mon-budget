@@ -83,8 +83,8 @@ export function Keypad({ onDigit, onComma, onBackspace, onSign, sign, pressedKey
           aria-pressed={sign === 'expense'}
           className={`${keyClass('-')} row-span-1 ${
             sign === 'expense'
-              ? 'bg-[var(--color-ink)] text-white shadow-[var(--shadow-lifted)]'
-              : 'bg-[var(--color-surface-muted)] text-[var(--color-ink)] hover:brightness-95'
+              ? 'bg-[var(--color-danger)] text-white shadow-[var(--shadow-lifted)]'
+              : 'bg-[var(--color-danger-soft)] text-[var(--color-danger)] hover:brightness-95'
           }`}
           aria-label="Dépense (moins)"
         >

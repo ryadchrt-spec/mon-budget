@@ -10,6 +10,7 @@ import { TopList } from './TopList'
 import { TopCategoryList } from './TopCategoryList'
 import { TransactionList } from './TransactionList'
 import { AnnualView } from './AnnualView'
+import { useStaggerReveal } from '../../hooks/useStaggerReveal'
 import {
   useAllCategories,
   useMonthTransactions,
@@ -67,6 +68,8 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
     [monthTransactions],
   )
 
+  const revealRef = useStaggerReveal([year, month, view])
+
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-5 px-4 pb-28 pt-5 sm:px-6">
       <TopBar
@@ -87,7 +90,7 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
           allTransactions={allTransactions ?? []}
         />
       ) : (
-        <>
+        <div ref={revealRef} className="flex flex-col gap-5">
           <AlertBanner rows={breakdown} />
           <MonthSummary totalIncome={totalIncome} totalExpense={totalExpense} reserve={reserve ?? 0} biggest={biggest} />
 
@@ -131,7 +134,7 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
               onEdit={onEditTransaction}
             />
           </div>
-        </>
+        </div>
       )}
 
       <AddFab onClick={onAdd} />
