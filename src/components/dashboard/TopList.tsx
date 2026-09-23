@@ -9,12 +9,13 @@ interface TopListProps {
   categories: Category[]
   onEdit: (transaction: Transaction) => void
   emptyLabel: string
+  className?: string
 }
 
-export function TopList({ title, transactions, categories, onEdit, emptyLabel }: TopListProps) {
+export function TopList({ title, transactions, categories, onEdit, emptyLabel, className = '' }: TopListProps) {
   const byId = new Map(categories.map((c) => [c.id, c]))
   return (
-    <Card data-anim-card className="p-5">
+    <Card data-anim-card className={`flex flex-col justify-center p-5 ${className}`}>
       <div className="mb-1 flex items-center gap-2">
         <Trophy size={18} className="text-[var(--color-warning)]" aria-hidden="true" />
         <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">{title}</h3>

@@ -59,8 +59,26 @@ export function useSettings() {
   return useLiveQuery(() => db.settings.get('app'), [])
 }
 
+const RECURRING_MONTHS_AHEAD = 11
+
 export async function addTransaction(input: Omit<Transaction, 'id' | 'createdAt'>) {
-  await db.transactions.add({ ...input, id: genId(), createdAt: Date.now() })
+  const now = Date.now()
+  await db.transactions.add({ ...input, id: genId(), createdAt: now })
+
+  if (input.recurring) {
+    const original = new Date(input.date)
+    const day = original.getDate()
+    const futureRecords: Transaction[] = []
+    for (let i = 1; i <= RECURRING_MONTHS_AHEAD; i++) {
+      const targetYear = original.getFullYear()
+      const targetMonth = original.getMonth() + i
+      const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate()
+      const clampedDay = Math.min(day, daysInTargetMonth)
+      const futureDate = new Date(targetYear, targetMonth, clampedDay, 12).toISOString()
+      futureRecords.push({ ...input, id: genId(), date: futureDate, createdAt: now + i })
+    }
+    await db.transactions.bulkAdd(futureRecords)
+  }
 }
 
 export async function updateTransaction(id: string, changes: Partial<Transaction>) {

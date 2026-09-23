@@ -49,3 +49,10 @@ export function fromDateInputValue(value: string): string {
   const [y, m, d] = value.split('-').map(Number)
   return new Date(y, m - 1, d, 12).toISOString()
 }
+
+const fullDateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+export function formatFullDate(value: string): string {
+  const [y, m, d] = value.split('-').map(Number)
+  return fullDateFormatter.format(new Date(y, m - 1, d, 12))
+}

@@ -18,7 +18,7 @@ export function MonthBarColumns({ totalIncome, totalExpense }: MonthBarColumnsPr
   return (
     <Card data-anim-card className="flex flex-col p-5">
       <span className="mb-3 text-sm font-medium text-[var(--color-ink-soft)]">Revenus vs Dépenses</span>
-      <div className="flex min-h-80 flex-1 items-end justify-center gap-14 py-2">
+      <div className="flex h-64 items-end justify-center gap-14 py-2">
         <div className="flex h-full flex-col items-center gap-2.5">
           <AnimatedNumber value={totalIncome} formatter={plusCompact} className="text-base font-bold tabular-nums text-[var(--color-income)]" />
           <div className="flex w-20 flex-1 items-end overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">

@@ -3,6 +3,7 @@ import { ArrowLeft, Check, Trash2, Repeat } from 'lucide-react'
 import gsap from 'gsap'
 import { Keypad } from './Keypad'
 import { CategoryGrid } from './CategoryGrid'
+import { DatePicker } from './DatePicker'
 import { Modal } from '../ui/Modal'
 import { CategoryForm, type CategoryFormValue } from '../settings/CategoryForm'
 import { useCategories } from '../../hooks/useBudgetData'
@@ -208,15 +209,7 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
       />
 
       <div className="mb-5 flex flex-col gap-2.5 sm:flex-row">
-        <label className="flex h-14 flex-1 items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4">
-          <span className="text-sm font-medium text-[var(--color-ink-soft)]">Date</span>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="flex-1 bg-transparent text-[17px] text-[var(--color-ink)] outline-none"
-          />
-        </label>
+        <DatePicker value={date} onChange={setDate} />
         <button
           type="button"
           onClick={() => setRecurring((r) => !r)}

@@ -7,11 +7,17 @@ import type { CategoryBreakdown } from '../../utils/budget'
 
 const minusEUR = (n: number) => `− ${formatEUR(n)}`
 
-export function TopCategoryList({ rows, limit = 5 }: { rows: CategoryBreakdown[]; limit?: number }) {
+interface TopCategoryListProps {
+  rows: CategoryBreakdown[]
+  limit?: number
+  className?: string
+}
+
+export function TopCategoryList({ rows, limit = 5, className = '' }: TopCategoryListProps) {
   const top = rows.slice(0, limit)
 
   return (
-    <Card data-anim-card className="p-5">
+    <Card data-anim-card className={`flex flex-col justify-center p-5 ${className}`}>
       <div className="mb-1 flex items-center gap-2">
         <Crown size={18} className="text-[var(--color-warning)]" aria-hidden="true" />
         <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">Top des dépenses par catégorie</h3>

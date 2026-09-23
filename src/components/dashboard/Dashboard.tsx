@@ -96,26 +96,31 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <CategoryPie rows={breakdown} />
-            <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
-            <CategoryProgressList rows={breakdown} plannedTotal={plannedTotal} />
-          </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            <TopCategoryList rows={breakdown} />
-            <TopList
-              title="Top des dépenses (uniques)"
-              transactions={topExpenses}
-              categories={categories ?? []}
-              onEdit={onEditTransaction}
-              emptyLabel="Aucune dépense ce mois-ci."
-            />
-            <TopList
-              title="Top des revenus"
-              transactions={topIncomes}
-              categories={categories ?? []}
-              onEdit={onEditTransaction}
-              emptyLabel="Aucun revenu ce mois-ci."
-            />
+            <div className="flex flex-col gap-5">
+              <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
+              <div className="flex flex-1 flex-col gap-5">
+                <TopCategoryList rows={breakdown} className="flex-1" />
+                <TopList
+                  title="Top des dépenses (uniques)"
+                  transactions={topExpenses}
+                  categories={categories ?? []}
+                  onEdit={onEditTransaction}
+                  emptyLabel="Aucune dépense ce mois-ci."
+                  className="flex-1"
+                />
+                <TopList
+                  title="Top des revenus"
+                  transactions={topIncomes}
+                  categories={categories ?? []}
+                  onEdit={onEditTransaction}
+                  emptyLabel="Aucun revenu ce mois-ci."
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <CategoryProgressList rows={breakdown} plannedTotal={plannedTotal} />
           </div>
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
