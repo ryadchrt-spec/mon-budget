@@ -101,14 +101,16 @@ export function AnnualView({ year, transactions, categories, allTransactions }: 
               />
               <Tooltip
                 formatter={(value, name, entry) => {
-                  const projected = name === 'Dépenses' && (entry.payload as { isProjected: boolean }).isProjected
-                  return [`${formatEUR(Number(value))}${projected ? ' (prévu)' : ''}`, name]
+                  const isExpense = name === 'Dépenses'
+                  const projected = isExpense && (entry.payload as { isProjected: boolean }).isProjected
+                  const sign = isExpense ? '− ' : '+ '
+                  return [`${sign}${formatEUR(Number(value))}${projected ? ' (prévu)' : ''}`, name]
                 }}
                 contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)', fontFamily: 'var(--font-body)' }}
               />
               <Legend wrapperStyle={{ fontFamily: 'var(--font-body)', fontSize: 13 }} />
               <Bar dataKey="Revenus" fill={INCOME_COLOR} radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Dépenses" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="Dépenses" fill={EXPENSE_COLOR} radius={[6, 6, 0, 0]}>
                 {data.map((row) => (
                   <Cell key={row.month} fill={row.isProjected ? EXPENSE_PROJECTED_COLOR : EXPENSE_COLOR} />
                 ))}

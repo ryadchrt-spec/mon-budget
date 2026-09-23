@@ -2,12 +2,6 @@ import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import type { CategoryBreakdown } from '../../utils/budget'
 import { formatEUR } from '../../utils/format'
 
-const TEXT_STYLES: Record<CategoryBreakdown['status'], string> = {
-  ok: 'text-[var(--color-ink-soft)]',
-  warning: 'text-[var(--color-warning)]',
-  danger: 'text-[var(--color-danger)]',
-}
-
 // 5 étapes cohérentes du vert au rouge, au fil du remplissage de la barre.
 const GRADIENT_STOPS = [
   { upTo: 0.2, color: '#16a34a' }, // vert
@@ -22,19 +16,29 @@ function gradientColor(ratio: number): string {
 }
 
 export function CategoryProgressBar({ row }: { row: CategoryBreakdown }) {
-  const textStyle = TEXT_STYLES[row.status]
   const pct = row.cap ? Math.min(100, Math.round(row.ratio * 100)) : 0
   const barColor = gradientColor(row.ratio)
+  const remaining = row.cap !== null ? row.cap - row.spent : null
 
   return (
     <div className="py-2.5">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="truncate text-[15px] font-medium text-[var(--color-ink)]">{row.category.name}</span>
-        <span className={`flex items-center gap-1 text-sm font-semibold ${textStyle}`}>
-          {row.status === 'danger' && <AlertTriangle size={15} aria-hidden="true" />}
+        <span className="flex items-center gap-1 text-sm font-semibold">
+          {row.status === 'danger' && <AlertTriangle size={15} className="text-[var(--color-danger)]" aria-hidden="true" />}
           {row.status === 'ok' && row.cap && <CheckCircle2 size={14} className="text-[var(--color-income)]" aria-hidden="true" />}
-          − {formatEUR(row.spent)}
-          {row.cap ? <span className="font-normal text-[var(--color-ink-soft)]"> / {formatEUR(row.cap)}</span> : null}
+          {remaining !== null && row.cap !== null ? (
+            <>
+              <span className={remaining >= 0 ? 'text-[var(--color-income)]' : 'text-[var(--color-danger)]'}>
+                {remaining >= 0 ? '' : '− '}
+                {formatEUR(Math.abs(remaining))}
+              </span>
+              <span className="font-normal text-[var(--color-ink-soft)]"> / </span>
+              <span className="text-[var(--color-danger)]">− {formatEUR(row.cap)}</span>
+            </>
+          ) : (
+            <span className="text-[var(--color-danger)]">− {formatEUR(row.spent)}</span>
+          )}
         </span>
       </div>
       <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--color-surface-muted)]">
