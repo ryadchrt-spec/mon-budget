@@ -30,6 +30,7 @@ export function CategoryProgressBar({ row }: { row: CategoryBreakdown }) {
         <span className="truncate text-[15px] font-medium text-[var(--color-ink)]">{row.category.name}</span>
         <span className="flex items-center gap-1 text-sm font-semibold">
           {row.status === 'danger' && <AlertTriangle size={15} className="text-[var(--color-danger)]" aria-hidden="true" />}
+          {row.status === 'warning' && <CheckCircle2 size={14} className="text-[var(--color-warning)]" aria-hidden="true" />}
           {row.status === 'ok' && row.cap && <CheckCircle2 size={14} className="text-[var(--color-income)]" aria-hidden="true" />}
           {remaining !== null && row.cap !== null ? (
             <>

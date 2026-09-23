@@ -7,6 +7,7 @@ export interface CategoryBreakdown {
   ratio: number
   percentOfIncome: number
   status: 'ok' | 'warning' | 'danger'
+  isCustomLimit: boolean
 }
 
 export function sumByType(transactions: Transaction[], type: 'income' | 'expense'): number {
@@ -36,9 +37,10 @@ export function categoryBreakdown(
         .reduce((sum, t) => sum + t.amount, 0)
 
       const threshold = category.alertThreshold ?? defaultAlertThreshold
+      const isCustomLimit = !!(category.monthlyLimit && category.monthlyLimit > 0)
       let cap: number | null = null
-      if (category.monthlyLimit && category.monthlyLimit > 0) {
-        cap = category.monthlyLimit
+      if (isCustomLimit) {
+        cap = category.monthlyLimit as number
       } else if (totalIncome > 0) {
         cap = totalIncome * (threshold / 100)
       }
@@ -52,7 +54,7 @@ export function categoryBreakdown(
         else if (ratio >= 0.8) status = 'warning'
       }
 
-      return { category, spent, cap, ratio, percentOfIncome, status }
+      return { category, spent, cap, ratio, percentOfIncome, status, isCustomLimit }
     })
     .filter((row) => row.spent > 0 || row.category.monthlyLimit)
     .sort((a, b) => b.spent - a.spent)
