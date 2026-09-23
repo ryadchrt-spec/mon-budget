@@ -94,7 +94,7 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
 
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-[var(--color-ink-soft)]">Icône</span>
-        <div className="grid max-h-48 grid-cols-6 gap-2 overflow-y-auto rounded-2xl bg-[var(--color-surface-muted)] p-2 sm:grid-cols-8">
+        <div className="scrollbar-soft grid max-h-48 grid-cols-6 gap-2 overflow-y-auto rounded-2xl bg-[var(--color-surface-muted)] p-2 sm:grid-cols-8">
           {ICON_NAMES.map((name_) => {
             const Icon = getIcon(name_)
             const selected = icon === name_

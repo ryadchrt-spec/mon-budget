@@ -11,7 +11,8 @@ interface TransactionListProps {
   categories: Category[]
   total: number
   onEdit: (transaction: Transaction) => void
-  maxHeightClass?: string
+  listMaxHeightClass?: string
+  matchHeight?: number
 }
 
 export function TransactionList({
@@ -20,14 +21,15 @@ export function TransactionList({
   categories,
   total,
   onEdit,
-  maxHeightClass = 'max-h-[26rem]',
+  listMaxHeightClass = 'max-h-[26rem]',
+  matchHeight,
 }: TransactionListProps) {
   const byId = new Map(categories.map((c) => [c.id, c]))
   const isIncome = type === 'income'
   const signedEUR = (n: number) => `${isIncome ? '+ ' : '− '}${formatEUR(n)}`
 
   return (
-    <Card data-anim-card className={`flex flex-col p-5 ${maxHeightClass}`}>
+    <Card data-anim-card className="flex flex-col p-5" style={matchHeight ? { height: matchHeight } : undefined}>
       <div className="mb-1 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {isIncome ? (
@@ -52,7 +54,9 @@ export function TransactionList({
           {isIncome ? 'Aucun revenu ce mois-ci.' : 'Aucune dépense ce mois-ci.'}
         </p>
       ) : (
-        <div className="flex flex-1 flex-col overflow-y-auto">
+        <div
+          className={`scrollbar-soft flex min-h-0 flex-1 flex-col overflow-y-auto ${matchHeight ? '' : listMaxHeightClass}`}
+        >
           {transactions.map((t) => (
             <TransactionRow key={t.id} transaction={t} category={byId.get(t.categoryId)} onClick={() => onEdit(t)} />
           ))}

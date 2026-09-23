@@ -49,7 +49,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
             <X size={22} aria-hidden="true" />
           </button>
         </div>
-        <div className="overflow-y-auto pr-1">{children}</div>
+        <div className="scrollbar-soft overflow-y-auto pr-1">{children}</div>
       </div>
     </div>
   )

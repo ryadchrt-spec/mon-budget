@@ -11,6 +11,8 @@ import { TopCategoryList } from './TopCategoryList'
 import { TransactionList } from './TransactionList'
 import { AnnualView } from './AnnualView'
 import { useStaggerReveal } from '../../hooks/useStaggerReveal'
+import { useMatchHeight } from '../../hooks/useMatchHeight'
+import { useElementHeight } from '../../hooks/useElementHeight'
 import {
   useAllCategories,
   useMonthTransactions,
@@ -69,6 +71,12 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
   )
 
   const revealRef = useStaggerReveal([year, month, view])
+  const { ref: categoryColumnRef, height: categoryColumnHeight } = useMatchHeight()
+  const { ref: revenusRef, height: revenusHeight } = useElementHeight<HTMLDivElement>()
+  const COLUMN_GAP = 20 // gap-5
+  const expenseMatchHeight = categoryColumnHeight
+    ? Math.max(categoryColumnHeight - revenusHeight - COLUMN_GAP, 0)
+    : undefined
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-5 px-4 pb-28 pt-5 sm:px-6">
@@ -95,28 +103,31 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
           <MonthSummary totalIncome={totalIncome} totalExpense={totalExpense} reserve={reserve ?? 0} biggest={biggest} />
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:items-start">
-            <CategoryPie rows={breakdown} />
+            <CategoryPie rows={breakdown} matchHeight={categoryColumnHeight} />
 
-            <div className="flex flex-col gap-5">
+            <div ref={categoryColumnRef} className="flex flex-col gap-5">
               <MonthBarColumns totalIncome={totalIncome} totalExpense={totalExpense} />
               <CategoryProgressList rows={breakdown} plannedTotal={plannedTotal} />
             </div>
 
             <div className="flex flex-col gap-5">
-              <TransactionList
-                type="income"
-                transactions={incomeList}
-                categories={categories ?? []}
-                total={totalIncome}
-                onEdit={onEditTransaction}
-                maxHeightClass="max-h-72"
-              />
+              <div ref={revenusRef}>
+                <TransactionList
+                  type="income"
+                  transactions={incomeList}
+                  categories={categories ?? []}
+                  total={totalIncome}
+                  onEdit={onEditTransaction}
+                  listMaxHeightClass="max-h-[214px]"
+                />
+              </div>
               <TransactionList
                 type="expense"
                 transactions={expenseList}
                 categories={categories ?? []}
                 total={totalExpense}
                 onEdit={onEditTransaction}
+                matchHeight={expenseMatchHeight}
               />
             </div>
           </div>

@@ -11,7 +11,7 @@ import type { CategoryBreakdown } from '../../utils/budget'
 
 const minusEUR = (n: number) => `− ${formatEUR(n)}`
 
-export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
+export function CategoryPie({ rows, matchHeight }: { rows: CategoryBreakdown[]; matchHeight?: number }) {
   const data = rows.filter((r) => r.spent > 0)
   const total = data.reduce((sum, r) => sum + r.spent, 0)
   const listRef = useRef<HTMLUListElement>(null)
@@ -32,7 +32,7 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
   }, [rows, reducedMotion])
 
   return (
-    <Card data-anim-card className="p-5">
+    <Card data-anim-card className="flex flex-col p-5" style={matchHeight ? { height: matchHeight } : undefined}>
       <div className="mb-3 flex items-center gap-2">
         <PieIcon size={18} className="text-[var(--color-primary)]" aria-hidden="true" />
         <h3 className="font-heading text-lg font-semibold text-[var(--color-ink)]">Où part ton argent</h3>
@@ -44,7 +44,7 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
         </p>
       ) : (
         <>
-          <div className="h-56 w-full">
+          <div className="h-56 w-full shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -78,7 +78,7 @@ export function CategoryPie({ rows }: { rows: CategoryBreakdown[] }) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <ul ref={listRef} className="mt-2 flex flex-col gap-2.5">
+          <ul ref={listRef} className="scrollbar-soft mt-2 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1">
             {data
               .slice()
               .sort((a, b) => b.spent - a.spent)
