@@ -68,6 +68,11 @@ export function biggestExpenseCategory(breakdown: CategoryBreakdown[]): Category
  * son plafond s'il en a un, sinon la somme de ses paiements récurrents
  * déjà en place à cette date. Sert de référence fixe (le "budget prévu"),
  * indépendante des dépenses réellement enregistrées ce mois-ci.
+ *
+ * Les paiements récurrents sont regroupés par nom (ex : "Loyer" repris
+ * chaque mois) pour ne compter qu'une fois un même engagement reconduit,
+ * en gardant son montant le plus récent — deux noms différents dans la
+ * même catégorie (ex : "Netflix" et "Spotify") restent additionnés.
  */
 export function plannedExpenseTotal(
   year: number,
@@ -82,11 +87,18 @@ export function plannedExpenseTotal(
     if (category.monthlyLimit && category.monthlyLimit > 0) {
       return sum + category.monthlyLimit
     }
-    const recurringSum = allTransactions
-      .filter(
-        (t) => t.recurring && t.type === 'expense' && t.categoryId === category.id && new Date(t.date).getTime() < cutoff,
-      )
-      .reduce((s, t) => s + t.amount, 0)
+
+    const latestByLabel = new Map<string, { amount: number; time: number }>()
+    for (const t of allTransactions) {
+      if (!t.recurring || t.type !== 'expense' || t.categoryId !== category.id) continue
+      const time = new Date(t.date).getTime()
+      if (time >= cutoff) continue
+      const existing = latestByLabel.get(t.label)
+      if (!existing || time > existing.time) {
+        latestByLabel.set(t.label, { amount: t.amount, time })
+      }
+    }
+    const recurringSum = Array.from(latestByLabel.values()).reduce((s, v) => s + v.amount, 0)
     return sum + recurringSum
   }, 0)
 }
