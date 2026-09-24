@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, genId } from '../db/db'
-import type { Category, Transaction, TransactionType } from '../types'
+import type { Category, Transaction, TransactionType, CategoryGoal } from '../types'
 
 export function useCategories(type?: TransactionType) {
   return useLiveQuery(async () => {
@@ -59,30 +59,100 @@ export function useSettings() {
   return useLiveQuery(() => db.settings.get('app'), [])
 }
 
-const RECURRING_MONTHS_AHEAD = 11
+// Recurring transactions are materialized as real rows (simpler to query/edit than computing
+// them on the fly), but we don't generate forever — we keep a rolling horizon of real rows
+// ahead of "today" and top it up as time passes, instead of a one-shot batch that ran out.
+const RECURRING_HORIZON_MONTHS = 24
+const RECURRING_TOPUP_THRESHOLD_MONTHS = 6
 
-export async function addTransaction(input: Omit<Transaction, 'id' | 'createdAt'>) {
+type RecurringTemplate = Omit<Transaction, 'id' | 'createdAt'>
+
+async function generateFutureOccurrences(template: RecurringTemplate, fromDate: Date, monthsAhead: number) {
   const now = Date.now()
-  await db.transactions.add({ ...input, id: genId(), createdAt: now })
+  const day = fromDate.getDate()
+  const records: Transaction[] = []
+  for (let i = 1; i <= monthsAhead; i++) {
+    const targetYear = fromDate.getFullYear()
+    const targetMonth = fromDate.getMonth() + i
+    const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate()
+    const clampedDay = Math.min(day, daysInTargetMonth)
+    const futureDate = new Date(targetYear, targetMonth, clampedDay, 12).toISOString()
+    records.push({ ...template, id: genId(), date: futureDate, createdAt: now + i })
+  }
+  await db.transactions.bulkAdd(records)
+}
 
-  if (input.recurring) {
-    const original = new Date(input.date)
-    const day = original.getDate()
-    const futureRecords: Transaction[] = []
-    for (let i = 1; i <= RECURRING_MONTHS_AHEAD; i++) {
-      const targetYear = original.getFullYear()
-      const targetMonth = original.getMonth() + i
-      const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate()
-      const clampedDay = Math.min(day, daysInTargetMonth)
-      const futureDate = new Date(targetYear, targetMonth, clampedDay, 12).toISOString()
-      futureRecords.push({ ...input, id: genId(), date: futureDate, createdAt: now + i })
-    }
-    await db.transactions.bulkAdd(futureRecords)
+export async function addTransaction(input: Omit<Transaction, 'id' | 'createdAt' | 'seriesId'>) {
+  const now = Date.now()
+  const seriesId = input.recurring ? genId() : undefined
+  const record: Transaction = { ...input, id: genId(), createdAt: now, seriesId }
+  await db.transactions.add(record)
+
+  if (input.recurring && seriesId) {
+    await generateFutureOccurrences({ ...input, seriesId }, new Date(input.date), RECURRING_HORIZON_MONTHS)
   }
 }
 
-export async function updateTransaction(id: string, changes: Partial<Transaction>) {
-  await db.transactions.update(id, changes)
+/**
+ * Tops up every active recurring series that's running low on future occurrences, so
+ * "se répète chaque mois" keeps working indefinitely instead of stopping after a fixed
+ * number of months. Cheap to call on every app load — no-ops when nothing needs topping up.
+ */
+export async function topUpRecurringSeries() {
+  const all = await db.transactions.toArray()
+  const bySeries = new Map<string, Transaction[]>()
+  for (const t of all) {
+    if (!t.recurring || !t.seriesId) continue
+    const list = bySeries.get(t.seriesId)
+    if (list) list.push(t)
+    else bySeries.set(t.seriesId, [t])
+  }
+
+  const topUpCutoff = new Date()
+  topUpCutoff.setMonth(topUpCutoff.getMonth() + RECURRING_TOPUP_THRESHOLD_MONTHS)
+
+  for (const [seriesId, txns] of bySeries) {
+    const latest = txns.reduce((max, t) => (new Date(t.date) > new Date(max.date) ? t : max), txns[0])
+    if (new Date(latest.date) < topUpCutoff) {
+      const { id: _id, createdAt: _createdAt, ...template } = latest
+      await generateFutureOccurrences({ ...template, seriesId }, new Date(latest.date), RECURRING_HORIZON_MONTHS)
+    }
+  }
+}
+
+/**
+ * `original` is the transaction as it was before this edit (needed to detect a recurring
+ * on/off transition and to know which series/date to act from).
+ *
+ * - Turning recurring ON: starts a brand-new series from this transaction's date forward.
+ * - Turning recurring OFF: stops the series from this transaction's date onward (deletes
+ *   the other future occurrences) but leaves past occurrences alone — they already happened.
+ * - Recurring unchanged: just updates this one row.
+ */
+export async function updateTransaction(original: Transaction, changes: Omit<Transaction, 'id' | 'createdAt' | 'seriesId'>) {
+  const wasRecurring = !!original.recurring && !!original.seriesId
+  const willRecur = changes.recurring
+
+  if (!wasRecurring && willRecur) {
+    const seriesId = genId()
+    await db.transactions.update(original.id, { ...changes, seriesId })
+    await generateFutureOccurrences({ ...changes, seriesId }, new Date(changes.date), RECURRING_HORIZON_MONTHS)
+    return
+  }
+
+  if (wasRecurring && !willRecur) {
+    const seriesId = original.seriesId as string
+    const cutoff = new Date(original.date).getTime()
+    const seriesRows = await db.transactions.where('seriesId').equals(seriesId).toArray()
+    const toDelete = seriesRows.filter((t) => t.id !== original.id && new Date(t.date).getTime() > cutoff)
+    if (toDelete.length > 0) {
+      await db.transactions.bulkDelete(toDelete.map((t) => t.id))
+    }
+    await db.transactions.update(original.id, { ...changes, seriesId: undefined })
+    return
+  }
+
+  await db.transactions.update(original.id, changes)
 }
 
 export async function deleteTransaction(id: string) {
@@ -105,4 +175,29 @@ export async function archiveCategory(id: string) {
 
 export async function updateSettings(changes: Partial<Omit<import('../types').AppSettings, 'id'>>) {
   await db.settings.update('app', changes)
+}
+
+function goalId(year: number, month: number, categoryId: string): string {
+  return `${year}-${month}-${categoryId}`
+}
+
+export function useCategoryGoals(year: number, month: number) {
+  return useLiveQuery(async () => {
+    const all = await db.categoryGoals.toArray()
+    return all.filter((g) => g.year === year && g.month === month)
+  }, [year, month])
+}
+
+export function useAllCategoryGoals() {
+  return useLiveQuery(() => db.categoryGoals.toArray(), [])
+}
+
+export async function setCategoryGoal(year: number, month: number, categoryId: string, limit: number) {
+  const id = goalId(year, month, categoryId)
+  const record: CategoryGoal = { id, year, month, categoryId, limit }
+  await db.categoryGoals.put(record)
+}
+
+export async function clearCategoryGoal(year: number, month: number, categoryId: string) {
+  await db.categoryGoals.delete(goalId(year, month, categoryId))
 }

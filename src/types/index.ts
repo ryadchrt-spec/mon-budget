@@ -22,10 +22,21 @@ export interface Transaction {
   date: string
   createdAt: number
   recurring?: boolean
+  /** Links every occurrence of the same recurring payment together. Only set when `recurring` is true. */
+  seriesId?: string
 }
 
 export interface AppSettings {
   id: 'app'
   defaultAlertThreshold: number
   theme: 'light' | 'dark' | 'auto'
+}
+
+/** A category's spending goal for one specific (year, month) — goals don't carry over automatically. */
+export interface CategoryGoal {
+  id: string
+  year: number
+  month: number
+  categoryId: string
+  limit: number
 }

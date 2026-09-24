@@ -8,7 +8,6 @@ export interface CategoryFormValue {
   type: TransactionType
   icon: string
   color: string
-  monthlyLimit?: number
   alertThreshold?: number
 }
 
@@ -24,7 +23,6 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
   const [type, setType] = useState<TransactionType>(initial?.type ?? defaultType)
   const [icon, setIcon] = useState(initial?.icon ?? 'MoreHorizontal')
   const [color, setColor] = useState(initial?.color ?? CATEGORY_COLORS[0])
-  const [monthlyLimit, setMonthlyLimit] = useState(initial?.monthlyLimit ? String(initial.monthlyLimit) : '')
   const [alertThreshold, setAlertThreshold] = useState(
     initial?.alertThreshold !== undefined ? String(initial.alertThreshold) : '',
   )
@@ -38,7 +36,6 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
       type,
       icon,
       color,
-      monthlyLimit: monthlyLimit ? Number(monthlyLimit.replace(',', '.')) : undefined,
       alertThreshold: alertThreshold ? Number(alertThreshold) : undefined,
     })
   }
@@ -118,30 +115,20 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
       </div>
 
       {type === 'expense' && (
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-[var(--color-ink-soft)]">Plafond mensuel (€)</span>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={monthlyLimit}
-              onChange={(e) => setMonthlyLimit(e.target.value)}
-              placeholder="Optionnel"
-              className="h-13 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[17px] text-[var(--color-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-[var(--color-ink-soft)]">Seuil d'alerte (%)</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={alertThreshold}
-              onChange={(e) => setAlertThreshold(e.target.value)}
-              placeholder="Par défaut"
-              className="h-13 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[17px] text-[var(--color-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-            />
-          </label>
-        </div>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-semibold text-[var(--color-ink-soft)]">Seuil d'alerte (%)</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={alertThreshold}
+            onChange={(e) => setAlertThreshold(e.target.value)}
+            placeholder="Par défaut"
+            className="h-13 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[17px] text-[var(--color-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+          />
+          <span className="text-xs text-[var(--color-ink-soft)]">
+            Le plafond (objectif de dépense) se règle mois par mois dans "Objectifs du mois", plus bas.
+          </span>
+        </label>
       )}
 
       <div className="flex items-center gap-3 pt-1">

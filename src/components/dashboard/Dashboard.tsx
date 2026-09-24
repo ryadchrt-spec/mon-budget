@@ -20,8 +20,9 @@ import {
   useAllTransactions,
   useSettings,
   useCumulativeReserve,
+  useAllCategoryGoals,
 } from '../../hooks/useBudgetData'
-import { sumByType, topTransactions, categoryBreakdown, biggestExpenseCategory, plannedExpenseTotal } from '../../utils/budget'
+import { sumByType, topTransactions, categoryBreakdown, biggestExpenseCategory, plannedExpenseTotal, goalMap } from '../../utils/budget'
 import type { Transaction } from '../../types'
 
 interface DashboardProps {
@@ -43,20 +44,30 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
   const allTransactions = useAllTransactions()
   const settings = useSettings()
   const reserve = useCumulativeReserve(year, month)
+  const goals = useAllCategoryGoals()
+  const goals$ = useMemo(() => goalMap(goals ?? []), [goals])
 
   const totalIncome = useMemo(() => sumByType(monthTransactions ?? [], 'income'), [monthTransactions])
   const totalExpense = useMemo(() => sumByType(monthTransactions ?? [], 'expense'), [monthTransactions])
 
   const breakdown = useMemo(
     () =>
-      categoryBreakdown(monthTransactions ?? [], categories ?? [], totalIncome, settings?.defaultAlertThreshold ?? 50),
-    [monthTransactions, categories, totalIncome, settings],
+      categoryBreakdown(
+        monthTransactions ?? [],
+        categories ?? [],
+        totalIncome,
+        settings?.defaultAlertThreshold ?? 50,
+        year,
+        month,
+        goals$,
+      ),
+    [monthTransactions, categories, totalIncome, settings, year, month, goals$],
   )
 
   const biggest = useMemo(() => biggestExpenseCategory(breakdown), [breakdown])
   const plannedTotal = useMemo(
-    () => plannedExpenseTotal(year, month, categories ?? [], allTransactions ?? []),
-    [year, month, categories, allTransactions],
+    () => plannedExpenseTotal(year, month, categories ?? [], allTransactions ?? [], goals$),
+    [year, month, categories, allTransactions, goals$],
   )
   const topExpenses = useMemo(() => topTransactions(monthTransactions ?? [], 'expense', 5), [monthTransactions])
   const topIncomes = useMemo(() => topTransactions(monthTransactions ?? [], 'income', 5), [monthTransactions])
@@ -96,6 +107,7 @@ export function Dashboard({ year, month, view, onPrev, onNext, onToggleView, onO
           transactions={yearTransactions ?? []}
           categories={categories ?? []}
           allTransactions={allTransactions ?? []}
+          goals={goals$}
         />
       ) : (
         <div ref={revealRef} className="flex flex-col gap-5">

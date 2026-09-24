@@ -19,13 +19,14 @@ interface AnnualViewProps {
   transactions: Transaction[]
   categories: Category[]
   allTransactions: Transaction[]
+  goals: Map<string, number>
 }
 
 const signedEUR = (n: number) => `${n >= 0 ? '+ ' : '− '}${formatEUR(Math.abs(n))}`
 const plusEUR = (n: number) => `+ ${formatEUR(n)}`
 const minusEUR = (n: number) => `− ${formatEUR(n)}`
 
-export function AnnualView({ year, transactions, categories, allTransactions }: AnnualViewProps) {
+export function AnnualView({ year, transactions, categories, allTransactions, goals }: AnnualViewProps) {
   const reducedMotion = useReducedMotion()
   const revealRef = useStaggerReveal([year])
 
@@ -48,7 +49,7 @@ export function AnnualView({ year, transactions, categories, allTransactions }: 
       if (isFuture) {
         // Les paiements récurrents sont déjà de vraies transactions dans les mois à venir ;
         // on ne complète qu'avec les plafonds encore "en attente" pour ne pas compter deux fois.
-        const planned = plannedExpenseTotal(year, row.monthIndex, categories, allTransactions)
+        const planned = plannedExpenseTotal(year, row.monthIndex, categories, allTransactions, goals)
         if (planned > row.Dépenses) {
           row.Dépenses = planned
           row.isProjected = true
@@ -56,7 +57,7 @@ export function AnnualView({ year, transactions, categories, allTransactions }: 
       }
     }
     return rows
-  }, [transactions, categories, allTransactions, year])
+  }, [transactions, categories, allTransactions, year, goals])
 
   const totalIncome = data.reduce((s, r) => s + r.Revenus, 0)
   const totalExpense = data.reduce((s, r) => s + r.Dépenses, 0)

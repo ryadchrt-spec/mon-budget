@@ -1,4 +1,4 @@
-import type { Category, Transaction } from '../types'
+import type { Category, Transaction, CategoryGoal } from '../types'
 
 export interface CategoryBreakdown {
   category: Category
@@ -14,6 +14,15 @@ export function sumByType(transactions: Transaction[], type: 'income' | 'expense
   return transactions.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0)
 }
 
+/** Builds a `year-month-categoryId` → limit lookup out of the raw goal rows. */
+export function goalMap(goals: CategoryGoal[]): Map<string, number> {
+  return new Map(goals.map((g) => [`${g.year}-${g.month}-${g.categoryId}`, g.limit]))
+}
+
+function lookupGoal(goals: Map<string, number>, year: number, month: number, categoryId: string): number | undefined {
+  return goals.get(`${year}-${month}-${categoryId}`)
+}
+
 export function topTransactions(transactions: Transaction[], type: 'income' | 'expense', limit = 5): Transaction[] {
   return transactions
     .filter((t) => t.type === type)
@@ -27,6 +36,9 @@ export function categoryBreakdown(
   categories: Category[],
   totalIncome: number,
   defaultAlertThreshold: number,
+  year: number,
+  month: number,
+  goals: Map<string, number>,
 ): CategoryBreakdown[] {
   const expenseCategories = categories.filter((c) => c.type === 'expense' && !c.archived)
 
@@ -37,10 +49,11 @@ export function categoryBreakdown(
         .reduce((sum, t) => sum + t.amount, 0)
 
       const threshold = category.alertThreshold ?? defaultAlertThreshold
-      const isCustomLimit = !!(category.monthlyLimit && category.monthlyLimit > 0)
+      const goalLimit = lookupGoal(goals, year, month, category.id)
+      const isCustomLimit = !!(goalLimit && goalLimit > 0)
       let cap: number | null = null
       if (isCustomLimit) {
-        cap = category.monthlyLimit as number
+        cap = goalLimit as number
       } else if (totalIncome > 0) {
         cap = totalIncome * (threshold / 100)
       }
@@ -56,7 +69,7 @@ export function categoryBreakdown(
 
       return { category, spent, cap, ratio, percentOfIncome, status, isCustomLimit }
     })
-    .filter((row) => row.spent > 0 || row.category.monthlyLimit)
+    .filter((row) => row.spent > 0 || row.isCustomLimit)
     .sort((a, b) => b.spent - a.spent)
 }
 
@@ -81,13 +94,15 @@ export function plannedExpenseTotal(
   month: number,
   categories: Category[],
   allTransactions: Transaction[],
+  goals: Map<string, number>,
 ): number {
   const cutoff = new Date(year, month + 1, 1).getTime()
   const expenseCategories = categories.filter((c) => c.type === 'expense' && !c.archived)
 
   return expenseCategories.reduce((sum, category) => {
-    if (category.monthlyLimit && category.monthlyLimit > 0) {
-      return sum + category.monthlyLimit
+    const goalLimit = lookupGoal(goals, year, month, category.id)
+    if (goalLimit && goalLimit > 0) {
+      return sum + goalLimit
     }
 
     const latestByLabel = new Map<string, { amount: number; time: number }>()

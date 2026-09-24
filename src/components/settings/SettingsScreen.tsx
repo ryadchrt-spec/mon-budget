@@ -4,6 +4,7 @@ import { Card } from '../ui/Card'
 import { IconBadge } from '../ui/IconBadge'
 import { Modal } from '../ui/Modal'
 import { CategoryForm, type CategoryFormValue } from './CategoryForm'
+import { CategoryGoalsSection } from './CategoryGoalsSection'
 import {
   useAllCategories,
   useSettings,
@@ -16,7 +17,15 @@ import { db } from '../../db/db'
 import { exportTransactionsToCSV } from '../../utils/csv'
 import type { Category, TransactionType } from '../../types'
 
-export function SettingsScreen({ onBack }: { onBack: () => void }) {
+export function SettingsScreen({
+  year,
+  month,
+  onBack,
+}: {
+  year: number
+  month: number
+  onBack: () => void
+}) {
   const categories = useAllCategories()
   const settings = useSettings()
   const [tab, setTab] = useState<TransactionType>('expense')
@@ -148,9 +157,6 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
               <IconBadge icon={cat.icon} color={cat.color} size="sm" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[15px] font-medium text-[var(--color-ink)]">{cat.name}</div>
-                {cat.monthlyLimit ? (
-                  <div className="text-xs text-[var(--color-ink-soft)]">Plafond {cat.monthlyLimit} €</div>
-                ) : null}
               </div>
               <Pencil size={16} className="shrink-0 text-[var(--color-ink-soft)]" aria-hidden="true" />
             </button>
@@ -160,6 +166,8 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
           )}
         </div>
       </Card>
+
+      <CategoryGoalsSection year={year} month={month} categories={(categories ?? []).filter((c) => c.type === 'expense' && !c.archived)} />
 
       <Card className="flex items-center gap-4 p-5">
         <ShieldCheck size={28} className="shrink-0 text-[var(--color-income)]" aria-hidden="true" />

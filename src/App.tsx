@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { EntryScreen } from './components/entry/EntryScreen'
 import { SettingsScreen } from './components/settings/SettingsScreen'
-import { ensureSeedData } from './db/db'
-import { addTransaction, updateTransaction, deleteTransaction, useSettings } from './hooks/useBudgetData'
+import { ensureSeedData, migrateCategoryLimitsToGoals, migrateLegacyRecurringSeries } from './db/db'
+import { addTransaction, updateTransaction, deleteTransaction, topUpRecurringSeries, useSettings } from './hooks/useBudgetData'
 import type { Transaction } from './types'
 
 type Screen = { name: 'dashboard' } | { name: 'entry'; editing: Transaction | null } | { name: 'settings' }
@@ -26,7 +26,10 @@ export default function App() {
   const settings = useSettings()
 
   useEffect(() => {
-    ensureSeedData().then(() => setReady(true))
+    ensureSeedData()
+      .then(() => Promise.all([migrateCategoryLimitsToGoals(), migrateLegacyRecurringSeries()]))
+      .then(() => topUpRecurringSeries())
+      .then(() => setReady(true))
   }, [])
 
   useEffect(() => {
@@ -71,7 +74,7 @@ export default function App() {
     recurring: boolean
   }) {
     if (screen.name === 'entry' && screen.editing) {
-      await updateTransaction(screen.editing.id, data)
+      await updateTransaction(screen.editing, data)
     } else {
       await addTransaction(data)
     }
@@ -106,7 +109,7 @@ export default function App() {
   }
 
   if (screen.name === 'settings') {
-    return <SettingsScreen onBack={() => setScreen({ name: 'dashboard' })} />
+    return <SettingsScreen year={year} month={month} onBack={() => setScreen({ name: 'dashboard' })} />
   }
 
   return (
