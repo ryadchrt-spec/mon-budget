@@ -67,7 +67,7 @@ export function categoryBreakdown(
 
       let status: CategoryBreakdown['status'] = 'ok'
       if (cap !== null) {
-        if (spent >= cap) status = 'danger'
+        if (spent > cap) status = 'danger'
         else if (goal?.alertAmount && goal.alertAmount > 0) {
           if (spent >= goal.alertAmount) status = 'warning'
         } else if (ratio >= 0.8) {
