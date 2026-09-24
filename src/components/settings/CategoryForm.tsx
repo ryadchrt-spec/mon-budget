@@ -8,7 +8,6 @@ export interface CategoryFormValue {
   type: TransactionType
   icon: string
   color: string
-  alertThreshold?: number
 }
 
 interface CategoryFormProps {
@@ -23,9 +22,6 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
   const [type, setType] = useState<TransactionType>(initial?.type ?? defaultType)
   const [icon, setIcon] = useState(initial?.icon ?? 'MoreHorizontal')
   const [color, setColor] = useState(initial?.color ?? CATEGORY_COLORS[0])
-  const [alertThreshold, setAlertThreshold] = useState(
-    initial?.alertThreshold !== undefined ? String(initial.alertThreshold) : '',
-  )
 
   const canSubmit = name.trim().length > 0
 
@@ -36,7 +32,6 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
       type,
       icon,
       color,
-      alertThreshold: alertThreshold ? Number(alertThreshold) : undefined,
     })
   }
 
@@ -115,20 +110,10 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
       </div>
 
       {type === 'expense' && (
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-semibold text-[var(--color-ink-soft)]">Seuil d'alerte (%)</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={alertThreshold}
-            onChange={(e) => setAlertThreshold(e.target.value)}
-            placeholder="Par défaut"
-            className="h-13 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[17px] text-[var(--color-ink)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-          />
-          <span className="text-xs text-[var(--color-ink-soft)]">
-            Le plafond (objectif de dépense) se règle mois par mois dans "Objectifs du mois", plus bas.
-          </span>
-        </label>
+        <p className="text-xs text-[var(--color-ink-soft)]">
+          Le seuil d'alerte et le plafond de dépense se règlent mois par mois dans "Objectifs du mois", dans les
+          réglages.
+        </p>
       )}
 
       <div className="flex items-center gap-3 pt-1">

@@ -14,12 +14,17 @@ export function sumByType(transactions: Transaction[], type: 'income' | 'expense
   return transactions.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0)
 }
 
-/** Builds a `year-month-categoryId` → limit lookup out of the raw goal rows. */
-export function goalMap(goals: CategoryGoal[]): Map<string, number> {
-  return new Map(goals.map((g) => [`${g.year}-${g.month}-${g.categoryId}`, g.limit]))
+/** Builds a `year-month-categoryId` → goal lookup out of the raw goal rows. */
+export function goalMap(goals: CategoryGoal[]): Map<string, CategoryGoal> {
+  return new Map(goals.map((g) => [`${g.year}-${g.month}-${g.categoryId}`, g]))
 }
 
-function lookupGoal(goals: Map<string, number>, year: number, month: number, categoryId: string): number | undefined {
+function lookupGoal(
+  goals: Map<string, CategoryGoal>,
+  year: number,
+  month: number,
+  categoryId: string,
+): CategoryGoal | undefined {
   return goals.get(`${year}-${month}-${categoryId}`)
 }
 
@@ -38,7 +43,7 @@ export function categoryBreakdown(
   defaultAlertThreshold: number,
   year: number,
   month: number,
-  goals: Map<string, number>,
+  goals: Map<string, CategoryGoal>,
 ): CategoryBreakdown[] {
   const expenseCategories = categories.filter((c) => c.type === 'expense' && !c.archived)
 
@@ -48,14 +53,13 @@ export function categoryBreakdown(
         .filter((t) => t.type === 'expense' && t.categoryId === category.id)
         .reduce((sum, t) => sum + t.amount, 0)
 
-      const threshold = category.alertThreshold ?? defaultAlertThreshold
-      const goalLimit = lookupGoal(goals, year, month, category.id)
-      const isCustomLimit = !!(goalLimit && goalLimit > 0)
+      const goal = lookupGoal(goals, year, month, category.id)
+      const isCustomLimit = !!(goal?.limit && goal.limit > 0)
       let cap: number | null = null
       if (isCustomLimit) {
-        cap = goalLimit as number
+        cap = goal!.limit as number
       } else if (totalIncome > 0) {
-        cap = totalIncome * (threshold / 100)
+        cap = totalIncome * (defaultAlertThreshold / 100)
       }
 
       const ratio = cap && cap > 0 ? spent / cap : 0
@@ -63,8 +67,12 @@ export function categoryBreakdown(
 
       let status: CategoryBreakdown['status'] = 'ok'
       if (cap !== null) {
-        if (ratio >= 1) status = 'danger'
-        else if (ratio >= 0.8) status = 'warning'
+        if (spent >= cap) status = 'danger'
+        else if (goal?.alertAmount && goal.alertAmount > 0) {
+          if (spent >= goal.alertAmount) status = 'warning'
+        } else if (ratio >= 0.8) {
+          status = 'warning'
+        }
       }
 
       return { category, spent, cap, ratio, percentOfIncome, status, isCustomLimit }
@@ -94,15 +102,15 @@ export function plannedExpenseTotal(
   month: number,
   categories: Category[],
   allTransactions: Transaction[],
-  goals: Map<string, number>,
+  goals: Map<string, CategoryGoal>,
 ): number {
   const cutoff = new Date(year, month + 1, 1).getTime()
   const expenseCategories = categories.filter((c) => c.type === 'expense' && !c.archived)
 
   return expenseCategories.reduce((sum, category) => {
-    const goalLimit = lookupGoal(goals, year, month, category.id)
-    if (goalLimit && goalLimit > 0) {
-      return sum + goalLimit
+    const goal = lookupGoal(goals, year, month, category.id)
+    if (goal?.limit && goal.limit > 0) {
+      return sum + goal.limit
     }
 
     const latestByLabel = new Map<string, { amount: number; time: number }>()

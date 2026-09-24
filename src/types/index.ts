@@ -38,5 +38,8 @@ export interface CategoryGoal {
   year: number
   month: number
   categoryId: string
-  limit: number
+  /** Hard cap in €. Crossing it turns the category "danger" (red). */
+  limit?: number
+  /** Earlier warning in €, below `limit`. Crossing it turns the category "warning" (orange). */
+  alertAmount?: number
 }

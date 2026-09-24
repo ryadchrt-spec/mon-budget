@@ -7,7 +7,7 @@ import { formatEUR } from '../../utils/format'
 import { plannedExpenseTotal } from '../../utils/budget'
 import { useStaggerReveal } from '../../hooks/useStaggerReveal'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import type { Category, Transaction } from '../../types'
+import type { Category, Transaction, CategoryGoal } from '../../types'
 
 const MONTH_SHORT = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
 const EXPENSE_COLOR = '#dc2626'
@@ -19,7 +19,7 @@ interface AnnualViewProps {
   transactions: Transaction[]
   categories: Category[]
   allTransactions: Transaction[]
-  goals: Map<string, number>
+  goals: Map<string, CategoryGoal>
 }
 
 const signedEUR = (n: number) => `${n >= 0 ? '+ ' : '− '}${formatEUR(Math.abs(n))}`

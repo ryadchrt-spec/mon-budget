@@ -192,9 +192,18 @@ export function useAllCategoryGoals() {
   return useLiveQuery(() => db.categoryGoals.toArray(), [])
 }
 
-export async function setCategoryGoal(year: number, month: number, categoryId: string, limit: number) {
+export async function setCategoryGoal(
+  year: number,
+  month: number,
+  categoryId: string,
+  values: { limit?: number; alertAmount?: number },
+) {
   const id = goalId(year, month, categoryId)
-  const record: CategoryGoal = { id, year, month, categoryId, limit }
+  if (!values.limit && !values.alertAmount) {
+    await db.categoryGoals.delete(id)
+    return
+  }
+  const record: CategoryGoal = { id, year, month, categoryId, limit: values.limit, alertAmount: values.alertAmount }
   await db.categoryGoals.put(record)
 }
 
