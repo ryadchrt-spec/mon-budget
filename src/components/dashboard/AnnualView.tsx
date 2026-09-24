@@ -45,8 +45,11 @@ export function AnnualView({ year, transactions, categories, allTransactions, go
       else rows[m].Dépenses += t.amount
     }
     for (const row of rows) {
-      const isFuture = year > now.getFullYear() || (year === now.getFullYear() && row.monthIndex > now.getMonth())
-      if (isFuture) {
+      // Le mois courant compte aussi : tant qu'on n'a pas encore dépensé, l'objectif qu'on vient
+      // de fixer doit se voir tout de suite dans la prévision annuelle, pas seulement à partir du
+      // mois suivant. Les mois passés, eux, restent sur le réel — inutile de "prévoir" un mois fini.
+      const isPast = year < now.getFullYear() || (year === now.getFullYear() && row.monthIndex < now.getMonth())
+      if (!isPast) {
         // Les paiements récurrents sont déjà de vraies transactions dans les mois à venir ;
         // on ne complète qu'avec les plafonds encore "en attente" pour ne pas compter deux fois.
         const planned = plannedExpenseTotal(year, row.monthIndex, categories, allTransactions, goals)
