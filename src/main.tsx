@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import App from './App.tsx'
+import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx'
+import { LockGate } from './components/lock/LockGate.tsx'
 
 // A new service worker taking over means a new version was deployed — reload right away
 // instead of leaving the tab stuck on stale JS until the person happens to notice.
@@ -20,6 +22,10 @@ document.addEventListener('visibilitychange', () => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <LockGate>
+        <App />
+      </LockGate>
+    </ErrorBoundary>
   </StrictMode>,
 )
