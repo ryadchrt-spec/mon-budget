@@ -200,6 +200,8 @@ export function SettingsScreen({
           <CategoryForm
             initial={editingCategory ?? undefined}
             defaultType={tab}
+            year={year}
+            month={month}
             onSubmit={handleSave}
             onDelete={editingCategory ? handleDelete : undefined}
           />

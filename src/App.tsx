@@ -16,6 +16,19 @@ function defaultDateFor(year: number, month: number): string {
   return new Date(year, month, 1, 12).toISOString()
 }
 
+// Module-scoped so it survives React StrictMode's double-invoke of the mount effect (a fresh
+// component instance still shares this module): the migrations and recurring top-up must each
+// run exactly once per page load, not once per effect invocation.
+let startupPromise: Promise<void> | null = null
+function ensureStartup(): Promise<void> {
+  if (!startupPromise) {
+    startupPromise = ensureSeedData()
+      .then(() => Promise.all([migrateCategoryLimitsToGoals(), migrateLegacyRecurringSeries()]))
+      .then(() => topUpRecurringSeries())
+  }
+  return startupPromise
+}
+
 export default function App() {
   const [ready, setReady] = useState(false)
   const [year, setYear] = useState(() => new Date().getFullYear())
@@ -26,10 +39,7 @@ export default function App() {
   const settings = useSettings()
 
   useEffect(() => {
-    ensureSeedData()
-      .then(() => Promise.all([migrateCategoryLimitsToGoals(), migrateLegacyRecurringSeries()]))
-      .then(() => topUpRecurringSeries())
-      .then(() => setReady(true))
+    ensureStartup().then(() => setReady(true))
   }, [])
 
   useEffect(() => {

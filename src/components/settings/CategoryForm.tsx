@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Check, Trash2 } from 'lucide-react'
 import { ICON_NAMES, CATEGORY_COLORS, getIcon } from '../../data/icons'
+import { CategoryGoalFields } from './CategoryGoalFields'
+import { monthLabel } from '../../utils/format'
 import type { Category, TransactionType } from '../../types'
 
 export interface CategoryFormValue {
@@ -13,11 +15,13 @@ export interface CategoryFormValue {
 interface CategoryFormProps {
   initial?: Category
   defaultType?: TransactionType
+  year: number
+  month: number
   onSubmit: (value: CategoryFormValue) => void
   onDelete?: () => void
 }
 
-export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDelete }: CategoryFormProps) {
+export function CategoryForm({ initial, defaultType = 'expense', year, month, onSubmit, onDelete }: CategoryFormProps) {
   const [name, setName] = useState(initial?.name ?? '')
   const [type, setType] = useState<TransactionType>(initial?.type ?? defaultType)
   const [icon, setIcon] = useState(initial?.icon ?? 'MoreHorizontal')
@@ -109,10 +113,18 @@ export function CategoryForm({ initial, defaultType = 'expense', onSubmit, onDel
         </div>
       </div>
 
-      {type === 'expense' && (
+      {type === 'expense' && initial && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-semibold text-[var(--color-ink-soft)]">Objectif de {monthLabel(year, month)}</span>
+          <CategoryGoalFields year={year} month={month} categoryId={initial.id} />
+          <span className="text-xs text-[var(--color-ink-soft)]">
+            Propre à ce mois-ci — change de mois sur le tableau de bord pour en définir un autre.
+          </span>
+        </div>
+      )}
+      {type === 'expense' && !initial && (
         <p className="text-xs text-[var(--color-ink-soft)]">
-          Le seuil d'alerte et le plafond de dépense se règlent mois par mois dans "Objectifs du mois", dans les
-          réglages.
+          Tu pourras régler son seuil d'alerte et sa limite une fois la catégorie créée.
         </p>
       )}
 

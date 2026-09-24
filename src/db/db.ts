@@ -54,13 +54,14 @@ export async function migrateCategoryLimitsToGoals() {
   const month = now.getMonth()
   const categories = await db.categories.toArray()
   const toAdd: CategoryGoal[] = categories
-    .filter((c) => c.monthlyLimit && c.monthlyLimit > 0)
-    .map((c) => ({
-      id: `${year}-${month}-${c.id}`,
+    .map((c) => ({ category: c, limit: Number(c.monthlyLimit) }))
+    .filter((c) => Number.isFinite(c.limit) && c.limit > 0)
+    .map(({ category, limit }) => ({
+      id: `${year}-${month}-${category.id}`,
       year,
       month,
-      categoryId: c.id,
-      limit: c.monthlyLimit as number,
+      categoryId: category.id,
+      limit,
     }))
 
   if (toAdd.length > 0) {

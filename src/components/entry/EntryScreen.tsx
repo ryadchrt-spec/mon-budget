@@ -99,6 +99,9 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      // A DatePicker or "Nouvelle catégorie" dialog is open on top of this screen — let its own
+      // Escape/typing handling deal with the keystroke instead of also cancelling this whole entry.
+      if (document.querySelector('[role="dialog"]')) return
       const activeTag = (document.activeElement as HTMLElement | null)?.tagName
       if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
         if (e.key === 'Escape') onCancel()
@@ -257,7 +260,12 @@ export function EntryScreen({ editing, defaultDate, onSave, onDelete, onCancel }
 
       {showNewCategory && (
         <Modal title="Nouvelle catégorie" onClose={() => setShowNewCategory(false)}>
-          <CategoryForm defaultType={sign} onSubmit={handleCreateCategory} />
+          <CategoryForm
+            defaultType={sign}
+            year={new Date(defaultDate).getFullYear()}
+            month={new Date(defaultDate).getMonth()}
+            onSubmit={handleCreateCategory}
+          />
         </Modal>
       )}
     </div>
